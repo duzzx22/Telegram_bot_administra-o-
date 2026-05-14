@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build: .
+    container_name: sistema-gestao-telegram
+    restart: unless-stopped
+    
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      ADMIN_IDS: ${ADMIN_IDS}
+      PYTHONUNBUFFERED: 1
+    
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sqlite3; sqlite3.connect('data/management.db').cursor().execute('SELECT 1')"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    networks:
+      - telegram-network
+
+networks:
+  telegram-network:
+    driver: bridge
